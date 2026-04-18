@@ -1,0 +1,68 @@
+name: PushToTalk
+options:
+  bundleIdPrefix: com.timmal
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+
+packages:
+  GRDB:
+    url: https://github.com/groue/GRDB.swift
+    from: 6.0.0
+  WhisperKit:
+    url: https://github.com/argmaxinc/WhisperKit
+    from: 0.9.0
+
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    SWIFT_VERSION: "5.9"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+  configs:
+    Debug:
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGNING_ALLOWED: YES
+    Release:
+      CODE_SIGNING_REQUIRED: NO
+      CODE_SIGNING_ALLOWED: YES
+
+targets:
+  PushToTalk:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources:
+      - path: Sources/App
+      - path: Sources/UI
+      - path: Sources/Core
+      - path: Sources/Whisper
+        optional: true
+    dependencies:
+      - package: GRDB
+        product: GRDB
+      - package: WhisperKit
+        product: WhisperKit
+    info:
+      path: Resources/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: Push-to-Talk
+        CFBundleName: Push-to-Talk
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSMicrophoneUsageDescription: Push-to-Talk transcribes your speech locally while you hold the hotkey.
+        NSHumanReadableCopyright: ""
+    entitlements:
+      path: Resources/PushToTalk.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.device.audio-input: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.timmal.push-to-talk
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: NO
