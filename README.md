@@ -81,7 +81,7 @@ By default, presses shorter than **150 ms** don't start recording — the key be
 - **Audio** — language (Auto / Russian / English), Whisper model, Fast insert (streaming), model download
 - **Terms** — terminology dictionary (see below)
 - **History** — clear history and reset metrics
-- **Support** — donation address (USDT TRC-20)
+- **Support**
 
 <p align="center">
   <img src="docs/screenshots/preferences-general.webp" width="560" alt="Preferences · General" />
