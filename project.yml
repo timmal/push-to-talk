@@ -53,7 +53,7 @@ targets:
         LSUIElement: true
         CFBundleDisplayName: Push-to-Talk
         CFBundleName: Push-to-Talk
-        CFBundleShortVersionString: "0.1.1"
+        CFBundleShortVersionString: "0.1.2"
         CFBundleVersion: "1"
         NSMicrophoneUsageDescription: Push-to-Talk transcribes your speech locally while you hold the hotkey.
         NSHumanReadableCopyright: ""
@@ -65,6 +65,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.timmal.push-to-talk
-        MARKETING_VERSION: "0.1.1"
+        MARKETING_VERSION: "0.1.2"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
