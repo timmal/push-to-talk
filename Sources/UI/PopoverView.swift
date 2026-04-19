@@ -90,7 +90,9 @@ struct PopoverView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            radioIcon.frame(width: 18, height: 18)
+            radioIcon
+                .frame(width: 18, height: 18)
+                .foregroundColor(PTT.textPrimary(scheme))
             Text("Push-to-Talk")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(PTT.textPrimary(scheme))
@@ -265,9 +267,14 @@ extension Notification.Name {
 var radioIcon: some View {
     if let url = Bundle.main.url(forResource: "radio", withExtension: "svg"),
        let nsimg = NSImage(contentsOf: url) {
-        Image(nsImage: nsimg).resizable().scaledToFit()
+        let templated: NSImage = {
+            let copy = nsimg.copy() as! NSImage
+            copy.isTemplate = true
+            return copy
+        }()
+        Image(nsImage: templated).resizable().scaledToFit()
     } else {
-        Image(systemName: "antenna.radiowaves.left.and.right")
+        Image(systemName: "antenna.radiowaves.left.and.right").resizable().scaledToFit()
     }
 }
 
