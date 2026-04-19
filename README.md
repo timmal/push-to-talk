@@ -2,6 +2,10 @@
 
 Local push-to-talk dictation for macOS. Hold the hotkey, speak, release — recognized text is inserted into the focused input. No cloud: Whisper runs on GPU via WhisperKit.
 
+<p align="center">
+  <img src="docs/screenshots/popover.png" width="320" alt="Menu bar popover" />
+</p>
+
 ## Features
 
 - **Push-to-talk** on Right Option or Right Cmd (configurable)
@@ -67,9 +71,18 @@ By default, presses shorter than **150 ms** don't start recording — the key be
 
 ## Preferences
 
-- **General** — hotkey, hold threshold, HUD mode (waveform / live transcript), HUD position (under the icon / bottom center), launch at login
-- **Audio** — language (Auto / Russian / English), Whisper model, download
+- **General** — hotkey, hold threshold, HUD position (under the icon / bottom center), theme (Auto / Light / Dark), launch at login, update check
+- **Audio** — language (Auto / Russian / English), Whisper model, Fast insert (streaming), model download
 - **History** — clear history and reset metrics
+- **Support** — donation address (USDT TRC-20)
+
+<p align="center">
+  <img src="docs/screenshots/preferences-general.png" width="560" alt="Preferences · General" />
+  <br /><br />
+  <img src="docs/screenshots/preferences-audio.png" width="560" alt="Preferences · Audio" />
+  <br /><br />
+  <img src="docs/screenshots/preferences-support.png" width="560" alt="Preferences · Support" />
+</p>
 
 ### Auto language detection
 
