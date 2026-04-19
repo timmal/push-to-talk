@@ -9,3 +9,4 @@ build/
 dist/
 *.dmg
 PushToTalk.xcodeproj/
+docs/superpowers/
