@@ -19,6 +19,7 @@ Local push-to-talk dictation for macOS. Hold the hotkey, speak, release — reco
 - **Menu bar popover** with the last 10 transcriptions (click to copy) and metrics: total words, 7-day avg WPM
 - **HUD overlay** while you hold the key: black pill with a live mic level or a live transcript
 - **Light text cleanup** — trims long "eeeeee / mmmmm / ummm", collapses 3+ consecutive repeats, capitalizes the first letter and adds a period
+- **Terminology dictionary** — canonical IT terms (pull request, Kubernetes, Claude Code, …) replace misrecognized Russian transliterations in transcripts; ships with ~110 defaults and is fully editable
 
 ## Install
 
@@ -77,6 +78,7 @@ By default, presses shorter than **150 ms** don't start recording — the key be
 
 - **General** — hotkey, hold threshold, HUD position (under the icon / bottom center), theme (Auto / Light / Dark), launch at login, update check
 - **Audio** — language (Auto / Russian / English), Whisper model, Fast insert (streaming), model download
+- **Terms** — terminology dictionary (see below)
 - **History** — clear history and reset metrics
 - **Support** — donation address (USDT TRC-20)
 
@@ -89,6 +91,29 @@ By default, presses shorter than **150 ms** don't start recording — the key be
 ### Auto language detection
 
 In Auto mode the app reads `Locale.preferredLanguages` from the system and restricts Whisper to those languages only. So if macOS has RU, EN, UK enabled, Whisper will pick among them and won't drift into, say, Bulgarian.
+
+When two of your preferred languages score close in detection (e.g. a sentence mixes Russian with English terms), the app drops the forced language for that utterance and lets Whisper switch per-segment — this tends to preserve English terms verbatim instead of transliterating them.
+
+### Terminology dictionary
+
+Whisper reliably recognizes common speech but routinely mangles IT terminology in mixed RU+EN dictation (`пулл реквест` instead of `pull request`, `кубернетес` instead of `Kubernetes`, and so on). The **Terms** tab lets you map your spoken variants to a single canonical form, which is then substituted in the transcript before it's inserted.
+
+<p align="center">
+  <img src="docs/screenshots/terminology-edit.webp" width="560" alt="Preferences · Terms — edit entry" />
+</p>
+
+**Default dictionary.** The app ships with ~110 curated IT entries spanning the whole dev cycle — VCS (pull request, rebase, cherry-pick), languages (TypeScript, Swift, Rust), frontend (React, Tailwind, Next.js), UX (wireframe, mockup, accessibility), backend (endpoint, middleware, migration), data (Postgres, Redis, ClickHouse), DevOps (Docker, Kubernetes, Helm chart), cloud (AWS, S3, Lambda), and AI tooling (Claude, MCP, Opus). On first launch the bundled list is copied to your Application Support directory — from then on the file is yours.
+
+**How updates work.** App updates do **not** touch your dictionary — your edits, additions, and deletions persist verbatim. To pull in new entries from the latest bundled default, open Preferences → Terms and click **Load defaults…**:
+
+- **Merge** — adds only canonical forms that aren't already in your list. Existing entries and your custom terms are untouched.
+- **Replace** — discards your list entirely and reloads the bundled defaults. Use with care.
+
+**Adding your own terms.** Click **Add term**, put the target form in *Canonical* (`webp`), and list the variants Whisper tends to produce in *Variants* (one per line: `Веб-пи`, `вебпп`, `вепп`, `Беппи`). Matching is case-insensitive by default and respects word boundaries, so `пулреквест` won't hit inside `пулреквестер`.
+
+**Import / Export.** Pure JSON — commit it to a dotfiles repo, share with a team, seed a new machine.
+
+**Storage.** `~/Library/Application Support/push-to-talk/terminology.json`.
 
 ## Architecture
 

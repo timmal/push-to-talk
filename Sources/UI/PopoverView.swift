@@ -75,6 +75,15 @@ struct PopoverView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(PTT.surfaceBorder(scheme), lineWidth: 1)
         )
+        .preferredColorScheme(colorSchemeOverride)
+    }
+
+    private var colorSchemeOverride: ColorScheme? {
+        switch prefs.appTheme {
+        case .auto:  return nil
+        case .light: return .light
+        case .dark:  return .dark
+        }
     }
 
     // MARK: - Header

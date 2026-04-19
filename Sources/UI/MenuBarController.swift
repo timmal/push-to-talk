@@ -46,6 +46,7 @@ final class MenuBarController {
             popover.performClose(sender)
         } else {
             viewModel.refresh()
+            popover.appearance = PreferencesStore.shared.appTheme.nsAppearance
             popover.show(relativeTo: btn.bounds, of: btn, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
             popover.contentViewController?.view.window?.makeKey()
