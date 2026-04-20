@@ -64,20 +64,27 @@ struct PreferencesView: View {
                 .padding(.vertical, 14)
                 .frame(maxWidth: .infinity)
 
-            ScrollView {
-                Group {
-                    switch tab {
-                    case .general:     generalTab
-                    case .audio:       audioTab
-                    case .terminology: TerminologyPreferencesView()
-                    case .history:     historyTab
-                    case .support:     supportTab
+            if tab == .terminology {
+                TerminologyPreferencesView()
+                    .padding(.horizontal, 28)
+                    .padding(.bottom, 28)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ScrollView {
+                    Group {
+                        switch tab {
+                        case .general:     generalTab
+                        case .audio:       audioTab
+                        case .terminology: EmptyView()
+                        case .history:     historyTab
+                        case .support:     supportTab
+                        }
                     }
+                    .padding(.horizontal, 28)
+                    .padding(.top, 8)
+                    .padding(.bottom, 28)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.horizontal, 28)
-                .padding(.top, 8)
-                .padding(.bottom, 28)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(width: 560, height: 428)

@@ -10,6 +10,7 @@ struct TerminologyPreferencesView: View {
     @State private var editing: TerminologyEntry?
     @State private var searchText: String = ""
     @FocusState private var searchFocused: Bool
+    @State private var importExportWidth: CGFloat = 180
 
     private var filteredEntries: [TerminologyEntry] {
         let q = searchText.trimmingCharacters(in: .whitespaces)
@@ -23,18 +24,41 @@ struct TerminologyPreferencesView: View {
 
     private static let languagePickerWidth: CGFloat = 180
 
+    private struct ImportExportWidthKey: PreferenceKey {
+        static var defaultValue: CGFloat = 0
+        static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+            value = max(value, nextValue())
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
             footer
             searchField
-
-            if store.entries.isEmpty {
-                emptyState
-            } else if filteredEntries.isEmpty {
-                noMatchesState
-            } else {
-                list
+            ScrollViewReader { proxy in
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 6) {
+                        Color.clear
+                            .frame(height: 0)
+                            .id("resultsTop")
+                        if store.entries.isEmpty {
+                            emptyState
+                        } else if filteredEntries.isEmpty {
+                            noMatchesState
+                        } else {
+                            ForEach(filteredEntries) { entry in
+                                row(entry)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .onChange(of: searchText) { _ in
+                    DispatchQueue.main.async {
+                        proxy.scrollTo("resultsTop", anchor: .top)
+                    }
+                }
             }
         }
         .background(
@@ -86,7 +110,7 @@ struct TerminologyPreferencesView: View {
             Text("Last detected")
                 .font(.system(size: 11))
                 .foregroundColor(PTT.textMuted(scheme))
-            StyledDropdown(selection: binding, width: Self.languagePickerWidth, current: currentLabel) {
+            StyledDropdown(selection: binding, width: importExportWidth, current: currentLabel) {
                 ForEach(languages) { lang in
                     Text(lang.label).tag(lang.rawValue)
                 }
@@ -193,15 +217,24 @@ struct TerminologyPreferencesView: View {
 
             Spacer()
 
-            Button { importJSON() } label: {
-                pillText("Import…")
-            }.buttonStyle(.plain)
+            HStack(spacing: 8) {
+                Button { importJSON() } label: {
+                    pillText("Import…")
+                }.buttonStyle(.plain)
 
-            Button { exportJSON() } label: {
-                pillText("Export…")
-            }.buttonStyle(.plain)
+                Button { exportJSON() } label: {
+                    pillText("Export…")
+                }.buttonStyle(.plain)
+            }
+            .background(
+                GeometryReader { g in
+                    Color.clear.preference(key: ImportExportWidthKey.self, value: g.size.width)
+                }
+            )
         }
-        .padding(.bottom, 4)
+        .onPreferenceChange(ImportExportWidthKey.self) { w in
+            if w > 0 { importExportWidth = w }
+        }
     }
 
     private func pillText(_ s: String) -> some View {
