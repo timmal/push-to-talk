@@ -41,6 +41,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkey = HotkeyMonitor()
 
         bind()
+        applyPrimaryLanguageToTerminology()
+        NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.applyPrimaryLanguageToTerminology() }
+        }
 
         Task {
             let modelID = PreferencesStore.shared.modelID
@@ -103,6 +109,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         HUDPillView()
     }
 
+    private func applyPrimaryLanguageToTerminology() {
+        let pref = PreferencesStore.shared.primaryLanguage
+        guard let code = pref.whisperCode else { return } // auto → let per-utterance detection drive
+        TerminologyStore.shared.setActiveLanguage(code)
+    }
+
     private func bind() {
         hotkey.events
             .receive(on: DispatchQueue.main)
@@ -162,7 +174,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             let elapsedMs = (DispatchTime.now().uptimeNanoseconds - startNs) / 1_000_000
             pttLog("result raw: \"\(result.text)\" lang=\(result.language ?? "?") durMs=\(result.durationMs) elapsedMs=\(elapsedMs)")
-            let cleaned = TextCleaner.clean(result.text, terminology: TerminologyStore.shared.entries)
+            let pref = PreferencesStore.shared.primaryLanguage
+            let lang = result.language ?? pref.whisperCode ?? TerminologyStore.shared.activeLanguage
+            if pref == .auto, let detected = result.language, !detected.isEmpty {
+                TerminologyStore.shared.setActiveLanguage(detected)
+            }
+            let cleaned = TextCleaner.clean(result.text, terminology: TerminologyStore.shared.entries(for: lang))
             pttLog("cleaned: \"\(cleaned)\"")
             guard !cleaned.isEmpty else { return }
             let wordCount = cleaned.split(whereSeparator: { $0.isWhitespace }).count

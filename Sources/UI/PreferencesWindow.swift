@@ -244,7 +244,7 @@ struct PreferencesView: View {
 
             labeledRow("Whisper model", alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
-                    styledDropdown(selection: $prefs.modelID, width: 320, current: prefs.modelID.label) {
+                    styledDropdown(selection: $prefs.modelID, width: 280, current: prefs.modelID.label) {
                         ForEach(WhisperModelID.allCases) { Text($0.label).tag($0) }
                     }
                     HStack(spacing: 6) {

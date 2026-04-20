@@ -9,6 +9,8 @@ struct TerminologyPreferencesView: View {
     @State private var selectedID: UUID?
     @State private var editing: TerminologyEntry?
 
+    private static let languagePickerWidth: CGFloat = 180
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
@@ -35,24 +37,54 @@ struct TerminologyPreferencesView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Terminology")
-                .font(.system(size: 13))
-                .foregroundColor(PTT.textBody(scheme))
-            Text("Canonical forms replace the listed variants in transcripts, and bias Whisper toward your terms.")
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Terminology")
+                    .font(.system(size: 13))
+                    .foregroundColor(PTT.textBody(scheme))
+                Text("Canonical forms replace the listed variants in transcripts, and bias Whisper toward your terms.")
+                    .font(.system(size: 11))
+                    .foregroundColor(PTT.textSoft(scheme))
+            }
+            Spacer(minLength: 0)
+            languagePicker
+        }
+    }
+
+    private var languagePicker: some View {
+        let binding = Binding<String>(
+            get: { store.activeLanguage },
+            set: { store.setActiveLanguage($0) }
+        )
+        let languages = PrimaryLanguage.allCases.filter { $0 != .auto }
+        let currentLabel = languages.first(where: { $0.rawValue == store.activeLanguage })?.label
+            ?? store.activeLanguage.uppercased()
+        return VStack(alignment: .trailing, spacing: 4) {
+            Text("Last detected")
                 .font(.system(size: 11))
-                .foregroundColor(PTT.textSoft(scheme))
+                .foregroundColor(PTT.textMuted(scheme))
+            StyledDropdown(selection: binding, width: Self.languagePickerWidth, current: currentLabel) {
+                ForEach(languages) { lang in
+                    Text(lang.label).tag(lang.rawValue)
+                }
+            }
         }
     }
 
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("No terms yet.")
+            Text("No terms yet for this language.")
                 .font(.system(size: 13))
                 .foregroundColor(PTT.textMuted(scheme))
-            Button { store.loadDefaults(mergeStrategy: .replaceAll) } label: {
-                pillText("Load default IT dictionary")
-            }.buttonStyle(.plain)
+            if store.hasSeed(for: store.activeLanguage) {
+                Button { store.loadDefaults(mergeStrategy: .replaceAll) } label: {
+                    pillText("Load default IT dictionary")
+                }.buttonStyle(.plain)
+            } else {
+                Text("No default dictionary is bundled for this language — add terms manually.")
+                    .font(.system(size: 11))
+                    .foregroundColor(PTT.textSoft(scheme))
+            }
         }
         .padding(.vertical, 8)
     }

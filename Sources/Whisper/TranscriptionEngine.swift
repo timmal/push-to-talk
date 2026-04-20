@@ -13,6 +13,7 @@ public final class TranscriptionEngine: ObservableObject {
     private var streaming = false
     private var promptTokens: [Int]?
     private var terminologyObserver: NSObjectProtocol?
+    private var activeLanguageObserver: NSObjectProtocol?
 
     private let baseInitialPrompt =
         "Смешанная русско-английская речь. Сохраняй английские термины в оригинале: meeting, deadline, pull request."
@@ -59,10 +60,20 @@ public final class TranscriptionEngine: ObservableObject {
                 self?.rebuildPromptTokens()
             }
         }
+        activeLanguageObserver = NotificationCenter.default.addObserver(
+            forName: .terminologyActiveLanguageChanged, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.rebuildPromptTokens()
+            }
+        }
     }
 
     deinit {
         if let obs = terminologyObserver {
+            NotificationCenter.default.removeObserver(obs)
+        }
+        if let obs = activeLanguageObserver {
             NotificationCenter.default.removeObserver(obs)
         }
     }
@@ -88,7 +99,7 @@ public final class TranscriptionEngine: ObservableObject {
 
     private func rebuildPromptTokens() {
         guard kit != nil else { return }
-        let hint = TerminologyStore.shared.promptHint()
+        let hint = TerminologyStore.shared.promptHint(for: TerminologyStore.shared.activeLanguage)
         let fullPrompt = hint.isEmpty
             ? baseInitialPrompt
             : baseInitialPrompt + " Термины: " + hint + "."

@@ -46,7 +46,11 @@ targets:
         buildPhase: resources
       - path: Resources/AppIcon.icns
         buildPhase: resources
-      - path: Resources/terminology-default.json
+      - path: Resources/terminology-default-ru.json
+        buildPhase: resources
+      - path: Resources/terminology-default-uk.json
+        buildPhase: resources
+      - path: Resources/terminology-default-en.json
         buildPhase: resources
     dependencies:
       - package: GRDB
