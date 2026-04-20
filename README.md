@@ -78,7 +78,7 @@ By default, presses shorter than **150 ms** don't start recording — the key be
 ## Preferences
 
 - **General** — hotkey, hold threshold, HUD position (under the icon / bottom center), theme (Auto / Light / Dark), launch at login, update check
-- **Audio** — language (Auto / Russian / English), Whisper model, Fast insert (streaming), model download
+- **Audio** — language (Auto / Russian / English), Whisper model, model download
 - **Terms** — terminology dictionary (see below)
 - **History** — clear history and reset metrics
 - **Support**

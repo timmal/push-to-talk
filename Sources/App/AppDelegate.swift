@@ -155,20 +155,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         Task { @MainActor in
             let startNs = DispatchTime.now().uptimeNanoseconds
-            let result: (text: String, language: String?, durationMs: Int)?
-            if PreferencesStore.shared.fastInsert {
-                await engine.awaitStream(timeoutMs: 400)
-                let raw = engine.partialText
-                if !raw.isEmpty {
-                    result = (raw, nil, engine.currentDurationMs)
-                    pttLog("fast: used streaming partial (\(raw.count) chars)")
-                } else {
-                    pttLog("fast: partial empty, falling back to finalize")
-                    result = await engine.finalize()
-                }
-            } else {
-                result = await engine.finalize()
-            }
+            let result = await engine.finalize()
             guard let result = result else {
                 pttLog("finalize returned nil (model not loaded or empty audio)")
                 return

@@ -172,7 +172,6 @@ public final class PreferencesStore: ObservableObject {
     @AppStorage("modelID")         public var modelID: WhisperModelID = .turbo
     @AppStorage("primaryLanguage") public var primaryLanguage: PrimaryLanguage = .ru
     @AppStorage("launchAtLogin")   public var launchAtLogin: Bool = false
-    @AppStorage("fastInsert")      public var fastInsert: Bool = false
     @AppStorage("appTheme")        public var appTheme: AppTheme = .auto
 
     public func applyAppearance() {

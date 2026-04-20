@@ -258,22 +258,6 @@ struct PreferencesView: View {
                 }
             }
 
-            labeledRow("", alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Toggle(isOn: $prefs.fastInsert) {
-                        Text("Fast insert (use streaming result)")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(PTT.textPrimary(scheme))
-                    }
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-
-                    Text("Inserts streaming transcript on release. Faster, may clip last fragment.")
-                        .font(.system(size: 11))
-                        .foregroundColor(PTT.textSoft(scheme))
-                }
-            }
-
             labeledRow("") {
                 if modelsVM.downloading {
                     ProgressView(value: modelsVM.progress).frame(width: 240)
