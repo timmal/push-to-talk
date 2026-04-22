@@ -5,18 +5,25 @@ final class HUDAmplitudeModel: ObservableObject {
     @Published var bars: [Float] = Array(repeating: 0, count: 24)
     static let shared = HUDAmplitudeModel()
     private var timer: Timer?
-    private var currentAmp: Float = 0
+    private var target: Float = 0
+    private var displayed: Float = 0
     private init() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
+                let alpha: Float = self.target > self.displayed ? 0.5 : 0.15
+                self.displayed += (self.target - self.displayed) * alpha
                 self.bars.removeFirst()
-                self.bars.append(min(1, self.currentAmp * 8))
+                self.bars.append(self.displayed)
             }
         }
         RunLoop.main.add(timer!, forMode: .common)
     }
-    func push(_ amp: Float) { currentAmp = amp }
+    func push(_ amp: Float) {
+        let db = 20 * log10(max(amp, 1e-6))
+        let norm = (db + 55) / 32
+        target = min(1, max(0, norm))
+    }
 }
 
 struct HUDPillView: View {
