@@ -7,6 +7,7 @@ public final class AudioRecorder {
 
     private let engine = AVAudioEngine()
     private var converter: AVAudioConverter?
+    private var monoHWFormat: AVAudioFormat?
     private let targetFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,
                                              sampleRate: 16_000, channels: 1, interleaved: false)!
     private var accumulated: AVAudioPCMBuffer?
@@ -19,7 +20,12 @@ public final class AudioRecorder {
         let input = engine.inputNode
         let hwFormat = input.outputFormat(forBus: 0)
         pttLog("AudioRecorder hwFormat: sampleRate=\(hwFormat.sampleRate) channels=\(hwFormat.channelCount)")
-        converter = AVAudioConverter(from: hwFormat, to: targetFormat)
+        let monoHW = AVAudioFormat(commonFormat: .pcmFormatFloat32,
+                                   sampleRate: hwFormat.sampleRate,
+                                   channels: 1,
+                                   interleaved: false)!
+        monoHWFormat = monoHW
+        converter = AVAudioConverter(from: monoHW, to: targetFormat)
 
         var tapCount = 0
         input.installTap(onBus: 0, bufferSize: 4096, format: hwFormat) { [weak self] buffer, _ in
@@ -53,9 +59,11 @@ public final class AudioRecorder {
     }
 
     private func process(buffer: AVAudioPCMBuffer) {
-        guard let converter else { return }
-        let ratio = targetFormat.sampleRate / buffer.format.sampleRate
-        let capacity = AVAudioFrameCount(Double(buffer.frameLength) * ratio + 128)
+        guard let converter, let monoHW = monoHWFormat else { return }
+        guard let monoBuffer = downmixToMono(buffer, monoFormat: monoHW) else { return }
+
+        let ratio = targetFormat.sampleRate / monoHW.sampleRate
+        let capacity = AVAudioFrameCount(Double(monoBuffer.frameLength) * ratio + 128)
         guard let targetBuffer = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: capacity) else { return }
 
         var err: NSError?
@@ -64,7 +72,7 @@ public final class AudioRecorder {
             if didProvide { status.pointee = .noDataNow; return nil }
             didProvide = true
             status.pointee = .haveData
-            return buffer
+            return monoBuffer
         }
         if err != nil { return }
 
@@ -78,6 +86,27 @@ public final class AudioRecorder {
 
         if let acc = accumulated { append(targetBuffer, to: acc) }
         chunks.send(targetBuffer)
+    }
+
+    private func downmixToMono(_ src: AVAudioPCMBuffer, monoFormat: AVAudioFormat) -> AVAudioPCMBuffer? {
+        let frames = src.frameLength
+        guard frames > 0, let channelData = src.floatChannelData else { return nil }
+        let channels = Int(src.format.channelCount)
+        guard let out = AVAudioPCMBuffer(pcmFormat: monoFormat, frameCapacity: frames),
+              let dst = out.floatChannelData?[0] else { return nil }
+        out.frameLength = frames
+        let n = Int(frames)
+        if channels == 1 {
+            memcpy(dst, channelData[0], n * MemoryLayout<Float>.size)
+        } else {
+            let inv = 1.0 / Float(channels)
+            for i in 0..<n {
+                var sum: Float = 0
+                for c in 0..<channels { sum += channelData[c][i] }
+                dst[i] = sum * inv
+            }
+        }
+        return out
     }
 
     private func append(_ src: AVAudioPCMBuffer, to dst: AVAudioPCMBuffer) {
