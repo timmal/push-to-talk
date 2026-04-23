@@ -22,7 +22,7 @@ public final class TranscriptionEngine: ObservableObject {
     private static let codeSwitchDeltaThreshold: Float = 0.25
     private static let codeSwitchMinProb: Float = 0.15
     private static let vadWindowSamples: Int = 480        // 30 ms at 16 kHz
-    private static let vadFloor: Float = 0.002
+    private static let vadFloor: Float = 0.0008
     private static let vadRelative: Float = 0.10          // threshold = max(floor, relative * peak)
     private static let vadPaddingMs: Int = 250
     private static let vadMinDurationMs: Int = 150
@@ -164,9 +164,10 @@ public final class TranscriptionEngine: ObservableObject {
         pttLog("finalize: VAD raw=\(rawMs)ms → trimmed=\(durationMs)ms")
         let isAuto = PreferencesStore.shared.primaryLanguage == .auto
         let preferred = Self.userPreferredLanguages()
+        let padded = padShortSegment(trimmed)
         do {
-            let override = try await chooseLanguage(kit: kit, samples: trimmed, isAuto: isAuto, preferred: preferred)
-            let results = try await kit.transcribe(audioArray: trimmed, decodeOptions: makeOptions(override: override))
+            let override = try await chooseLanguage(kit: kit, samples: padded, isAuto: isAuto, preferred: preferred)
+            let results = try await kit.transcribe(audioArray: padded, decodeOptions: makeOptions(override: override))
             let text = results.map(\.text).joined(separator: " ").trimmingCharacters(in: .whitespaces)
             let lang = results.first?.language
             pttLog("finalize: text=\"\(text)\" lang=\(lang ?? "?") override=\(override ?? "nil") dur=\(durationMs)ms")
@@ -213,16 +214,27 @@ public final class TranscriptionEngine: ObservableObject {
             language: override ?? PreferencesStore.shared.primaryLanguage.whisperCode,
             temperature: 0.0,
             temperatureIncrementOnFallback: 0.2,
-            temperatureFallbackCount: streaming ? 0 : 5,
+            temperatureFallbackCount: streaming ? 0 : 2,
             usePrefillPrompt: true,
             skipSpecialTokens: true,
             withoutTimestamps: true,
             promptTokens: Self.usePromptBiasing ? promptTokens : nil,
-            suppressBlank: true,
+            suppressBlank: false,
             compressionRatioThreshold: 2.4,
-            logProbThreshold: -1.0,
-            noSpeechThreshold: 0.6
+            logProbThreshold: -1.5,
+            noSpeechThreshold: nil
         )
+    }
+
+    /// Whisper is trained on 30s windows; sub-second segments can be mis-classified as
+    /// silence. Pad short inputs with leading/trailing silence to at least 1s total.
+    private func padShortSegment(_ samples: [Float]) -> [Float] {
+        let minSamples = 32_000
+        guard samples.count < minSamples else { return samples }
+        let deficit = minSamples - samples.count
+        let lead = deficit / 2
+        let trail = deficit - lead
+        return Array(repeating: 0, count: lead) + samples + Array(repeating: 0, count: trail)
     }
 
     // MARK: - VAD
