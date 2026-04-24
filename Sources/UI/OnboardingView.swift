@@ -39,8 +39,11 @@ struct OnboardingView: View {
                 .foregroundColor(ok ? .green : .secondary)
             Text(title)
             Spacer()
-            if !ok { Button("Open…", action: action) }
+            Button("Open…", action: action)
+                .opacity(ok ? 0 : 1)
+                .disabled(ok)
         }
+        .frame(height: 28)
     }
 
     private func refresh() {
