@@ -32,7 +32,13 @@ public protocol HistoryStoring {
     func clear() throws
 }
 
+extension Notification.Name {
+    public static let historyDidChange = Notification.Name("historyDidChange")
+}
+
 public final class HistoryStore: HistoryStoring {
+    public static let maxEntries = 100
+
     private let dbQueue: DatabaseQueue
 
     public init(url: URL) throws {
@@ -44,7 +50,7 @@ public final class HistoryStore: HistoryStoring {
 
     public static func defaultURL() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("push-to-talk/history.sqlite")
+        return base.appendingPathComponent("HoldSpeak/history.sqlite")
     }
 
     private func migrate() throws {
@@ -65,11 +71,24 @@ public final class HistoryStore: HistoryStoring {
     }
 
     public func append(_ record: TranscriptionRecord) throws -> TranscriptionRecord {
-        try dbQueue.write { db in
+        let saved = try dbQueue.write { db -> TranscriptionRecord in
             var r = record
             try r.insert(db)
+            try db.execute(
+                sql: """
+                DELETE FROM transcriptions
+                WHERE id NOT IN (
+                    SELECT id FROM transcriptions
+                    ORDER BY createdAt DESC, id DESC
+                    LIMIT ?
+                )
+                """,
+                arguments: [Self.maxEntries]
+            )
             return r
         }
+        NotificationCenter.default.post(name: .historyDidChange, object: nil)
+        return saved
     }
 
     public func recent(limit: Int) throws -> [TranscriptionRecord] {
@@ -100,5 +119,6 @@ public final class HistoryStore: HistoryStoring {
 
     public func clear() throws {
         try dbQueue.write { db in try db.execute(sql: "DELETE FROM transcriptions") }
+        NotificationCenter.default.post(name: .historyDidChange, object: nil)
     }
 }

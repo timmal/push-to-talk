@@ -1,5 +1,5 @@
 import XCTest
-@testable import PushToTalkCore
+@testable import HoldSpeakCore
 
 final class TerminologyStoreTests: XCTestCase {
     private func tempDir() -> URL {

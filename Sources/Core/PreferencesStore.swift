@@ -172,6 +172,9 @@ public final class PreferencesStore: ObservableObject {
     @AppStorage("primaryLanguage") public var primaryLanguage: PrimaryLanguage = .ru
     @AppStorage("launchAtLogin")   public var launchAtLogin: Bool = false
     @AppStorage("appTheme")        public var appTheme: AppTheme = .auto
+    @AppStorage("autoPunctuation") public var autoPunctuation: Bool = true
+    @AppStorage("autoCapitalize")  public var autoCapitalize: Bool = true
+    @AppStorage("metricsResetAtMs") public var metricsResetAtMs: Int = 0
 
     public func applyAppearance() {
         NSApp.appearance = appTheme.nsAppearance

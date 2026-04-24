@@ -23,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         PreferencesStore.shared.applyAppearance()
+        Self.migrateLegacyAppSupportDirectory()
 
         do {
             store = try HistoryStore(url: HistoryStore.defaultURL())
@@ -31,7 +32,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.terminate(nil)
             return
         }
-        metrics = MetricsEngine(store: store)
+        metrics = MetricsEngine(store: store, resetAnchor: {
+            Int64(PreferencesStore.shared.metricsResetAtMs)
+        })
         recorder = AudioRecorder()
         engine = TranscriptionEngine()
         modelsVM = ModelsViewModel()
@@ -98,6 +101,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             historyStore: store,
             onClearHistory: { [weak self] in
                 try? self?.store.clear()
+                self?.popoverVM.refresh()
+            },
+            onResetMetrics: { [weak self] in
+                PreferencesStore.shared.metricsResetAtMs = Int(Date().timeIntervalSince1970 * 1000)
                 self?.popoverVM.refresh()
             },
             initialTab: initialTab
@@ -179,7 +186,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if pref == .auto, let detected = result.language, !detected.isEmpty {
                 TerminologyStore.shared.setActiveLanguage(detected)
             }
-            let cleaned = TextCleaner.clean(result.text, terminology: TerminologyStore.shared.entries(for: lang))
+            let prefs = PreferencesStore.shared
+            let cleaned = TextCleaner.clean(
+                result.text,
+                terminology: TerminologyStore.shared.entries(for: lang),
+                autoPunctuation: prefs.autoPunctuation,
+                autoCapitalize: prefs.autoCapitalize
+            )
             pttLog("cleaned: \"\(cleaned)\"")
             guard !cleaned.isEmpty else { return }
             let wordCount = cleaned.split(whereSeparator: { $0.isWhitespace }).count
@@ -205,6 +218,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 break
             }
             popoverVM.refresh()
+        }
+    }
+
+    private static func migrateLegacyAppSupportDirectory() {
+        let fm = FileManager.default
+        let base = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let legacy = base.appendingPathComponent("push-to-talk")
+        let target = base.appendingPathComponent("HoldSpeak")
+        guard fm.fileExists(atPath: legacy.path),
+              !fm.fileExists(atPath: target.path) else { return }
+        do {
+            try fm.moveItem(at: legacy, to: target)
+            pttLog("Migrated Application Support: push-to-talk → HoldSpeak")
+        } catch {
+            pttLog("Migration failed: \(error)")
         }
     }
 

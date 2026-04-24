@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="docs/screenshots/logo.webp" width="180" alt="Push-to-Talk logo" />
+  <img src="docs/screenshots/logo.webp" width="180" alt="HoldSpeak logo" />
 </p>
 
-# Push-to-Talk
+# HoldSpeak
 
-Local push-to-talk dictation for macOS. Hold the hotkey, speak, release — recognized text is inserted into the focused input. No cloud: Whisper runs on GPU via WhisperKit.
+Local push-to-talk dictation for macOS. HoldSpeak is a **menu bar app** (no Dock icon, no windows in the way) — it lives in the status bar and stays out of your workflow until you hold the hotkey. Speak, release — recognized text is inserted into the focused input. No cloud: Whisper runs on GPU via WhisperKit.
 
 <p align="center">
   <img src="docs/screenshots/popover.webp?v=2" width="320" alt="Menu bar popover" />
 </p>
 
-A free, local alternative to paid Whisper wrappers. Built for one reason: talking to AI is faster than typing to it. Average typing speed hovers around 40–60 wpm; comfortable speech is 130–160 wpm — two to three times faster. As more of the dev loop moves into prompts to AI agents, raw typing throughput becomes a real ceiling on how quickly you can iterate. Push-to-Talk lifts it: hold the hotkey, speak a full thought, release, it lands in the input.
+A free, local alternative to paid Whisper wrappers. Built for one reason: talking to AI is faster than typing to it. Average typing speed hovers around 40–60 wpm; comfortable speech is 130–160 wpm — two to three times faster. As more of the dev loop moves into prompts to AI agents, raw typing throughput becomes a real ceiling on how quickly you can iterate. HoldSpeak lifts it: hold the hotkey, speak a full thought, release, it lands in the input.
 
 ## Features
 
@@ -24,9 +24,9 @@ A free, local alternative to paid Whisper wrappers. Built for one reason: talkin
 
 ## Install
 
-Grab the latest DMG from the [Releases page](https://github.com/timmal/push-to-talk/releases/latest), open it, and drag `PushToTalk.app` into `Applications`.
+Grab the latest DMG from the [Releases page](https://github.com/timmal/HoldSpeak/releases/latest), open it, and drag `HoldSpeak.app` into `Applications`.
 
-Because the app is self-signed, macOS will block the first launch. Open **System Settings → Privacy & Security**, scroll to the message *"PushToTalk was blocked…"* and click **Open Anyway**. Confirm with Touch ID / password. After that it launches normally from Launchpad / Applications.
+Because the app is self-signed, macOS will block the first launch. Open **System Settings → Privacy & Security**, scroll to the message *"HoldSpeak was blocked…"* and click **Open Anyway**. Confirm with Touch ID / password. After that it launches normally from Launchpad / Applications. The app runs as a menu bar extra — look for the radio icon in the right side of your menu bar; it won't appear in the Dock or Cmd-Tab.
 
 On first launch, grant three permissions:
 
@@ -41,16 +41,16 @@ The onboarding window has Open… and Re-check buttons.
 The app checks GitHub for new versions in the background and shows an **Update available** banner in the menu bar popover. You can also trigger a check manually via Preferences → General → **Check for updates**.
 
 1. Click **Download** in the banner — it opens the latest release on GitHub.
-2. Download the `.dmg`, open it, and drag `PushToTalk.app` into `Applications`. macOS will ask to replace the old copy — confirm.
+2. Download the `.dmg`, open it, and drag `HoldSpeak.app` into `Applications`. macOS will ask to replace the old copy — confirm.
 3. Quit the running app from the menu bar (Quit), then launch the new one from `Applications`.
 
-Your preferences, history, and downloaded models live in `~/Library/Application Support/PushToTalk/` and are preserved across updates.
+Your preferences, history, and downloaded models live in `~/Library/Application Support/HoldSpeak/` and are preserved across updates.
 
 ### Model
 
 The default is **Turbo (large-v3 distilled, ~800 MB)** — the best quality/speed trade-off. You can switch to Tiny or Small in Preferences → Audio.
 
-If you already have MacWhisper / another WhisperKit client installed, their models will be picked up automatically. Otherwise the first model is downloaded to `~/Library/Application Support/PushToTalk/Models/`.
+If you already have MacWhisper / another WhisperKit client installed, their models will be picked up automatically. Otherwise the first model is downloaded to `~/Library/Application Support/HoldSpeak/Models/`.
 
 ### Reducing insertion latency
 
@@ -118,7 +118,7 @@ Whisper reliably recognizes common speech but routinely mangles IT terminology i
 
 **Import / Export.** Pure JSON — commit it to a dotfiles repo, share with a team, seed a new machine.
 
-**Storage.** `~/Library/Application Support/push-to-talk/terminology/<lang>.json` (one file per language: `ru.json`, `en.json`, `uk.json`, …).
+**Storage.** `~/Library/Application Support/HoldSpeak/terminology/<lang>.json` (one file per language: `ru.json`, `en.json`, `uk.json`, …).
 
 ## Architecture
 
@@ -127,14 +127,14 @@ Whisper reliably recognizes common speech but routinely mangles IT terminology i
 - `Sources/UI` — SwiftUI: menu bar popover, preferences, onboarding, HUD
 - `Sources/App` — AppDelegate and entry point
 
-Transcription history is stored in a GRDB-SQLite database at `~/Library/Application Support/PushToTalk/history.sqlite`.
+Transcription history is stored in a GRDB-SQLite database at `~/Library/Application Support/HoldSpeak/history.sqlite` (most recent 100 entries are kept).
 
 ## Logs
 
-Diagnostic events go to `~/Library/Logs/PushToTalk.log`. Useful for microphone / language detection / hotkey issues:
+Diagnostic events go to `~/Library/Logs/HoldSpeak.log`. Useful for microphone / language detection / hotkey issues:
 
 ```bash
-tail -f ~/Library/Logs/PushToTalk.log
+tail -f ~/Library/Logs/HoldSpeak.log
 ```
 
 ## Troubleshooting

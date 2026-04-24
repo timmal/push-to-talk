@@ -2,7 +2,7 @@ import Foundation
 
 public func pttLog(_ msg: String) {
     NSLog("[PTT] \(msg)")
-    let path = ("~/Library/Logs/PushToTalk.log" as NSString).expandingTildeInPath
+    let path = ("~/Library/Logs/HoldSpeak.log" as NSString).expandingTildeInPath
     let url = URL(fileURLWithPath: path)
     let line = "\(Date()) \(msg)\n"
     guard let data = line.data(using: .utf8) else { return }

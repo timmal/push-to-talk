@@ -45,6 +45,7 @@ struct PreferencesView: View {
     @ObservedObject var modelsVM: ModelsViewModel
     var historyStore: HistoryStoring
     var onClearHistory: () -> Void
+    var onResetMetrics: () -> Void
     var initialTab: PrefsTab = .general
 
     @Environment(\.colorScheme) private var scheme
@@ -52,7 +53,7 @@ struct PreferencesView: View {
     @State private var updateStatus: String?
     @State private var history: [TranscriptionRecord] = []
 
-    private static let historyLimit = 500
+    private static let historyLimit = HistoryStore.maxEntries
 
     private func loadHistory() {
         history = (try? historyStore.recent(limit: Self.historyLimit)) ?? []
@@ -96,6 +97,9 @@ struct PreferencesView: View {
             if tab == .history { loadHistory() }
         }
         .onChange(of: tab) { newTab in if newTab == .history { loadHistory() } }
+        .onReceive(NotificationCenter.default.publisher(for: .historyDidChange)) { _ in
+            if tab == .history { loadHistory() }
+        }
     }
 
     private var colorSchemeOverride: ColorScheme? {
@@ -288,6 +292,26 @@ struct PreferencesView: View {
                     .disabled(modelsVM.isLocated(prefs.modelID))
                 }
             }
+
+            labeledRow("") {
+                Toggle(isOn: $prefs.autoPunctuation) {
+                    Text("Add period at end of sentence")
+                        .font(.system(size: 13))
+                        .foregroundColor(PTT.textBody(scheme))
+                }
+                .toggleStyle(.checkbox)
+                .controlSize(.small)
+            }
+
+            labeledRow("") {
+                Toggle(isOn: $prefs.autoCapitalize) {
+                    Text("Capitalize first letter")
+                        .font(.system(size: 13))
+                        .foregroundColor(PTT.textBody(scheme))
+                }
+                .toggleStyle(.checkbox)
+                .controlSize(.small)
+            }
         }
     }
 
@@ -300,6 +324,30 @@ struct PreferencesView: View {
                     .font(.system(size: 13))
                     .foregroundColor(PTT.textBody(scheme))
                 Spacer()
+                Button {
+                    let alert = NSAlert()
+                    alert.messageText = "Reset metrics?"
+                    alert.informativeText = "Total words and WPM in the popover will start counting from zero. History is kept."
+                    alert.addButton(withTitle: "Reset")
+                    alert.addButton(withTitle: "Cancel")
+                    if alert.runModal() == .alertFirstButtonReturn {
+                        onResetMetrics()
+                    }
+                } label: {
+                    Text("Reset metrics")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(PTT.textPrimary(scheme))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8).fill(PTT.buttonBG(scheme))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8).stroke(PTT.fieldBorder(scheme), lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+
                 Button {
                     let alert = NSAlert()
                     alert.messageText = "Clear all transcription history?"
@@ -493,7 +541,7 @@ final class PreferencesWindowController: NSWindowController {
     convenience init() {
         let host = NSHostingController(rootView: AnyView(EmptyView()))
         let win = NSWindow(contentViewController: host)
-        win.title = "Push-to-Talk Preferences"
+        win.title = "HoldSpeak Preferences"
         win.styleMask = [.titled, .closable, .fullSizeContentView]
         win.titlebarAppearsTransparent = true
         win.isMovableByWindowBackground = true

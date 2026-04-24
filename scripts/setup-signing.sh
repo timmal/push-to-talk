@@ -4,7 +4,7 @@
 # Run once per machine.
 set -euo pipefail
 
-CERT_NAME="PushToTalk Dev (self-signed)"
+CERT_NAME="HoldSpeak Dev (self-signed)"
 
 if security find-identity -v -p codesigning login.keychain-db 2>/dev/null | grep -q "$CERT_NAME"; then
   echo "Already have '$CERT_NAME' in login keychain. Nothing to do."

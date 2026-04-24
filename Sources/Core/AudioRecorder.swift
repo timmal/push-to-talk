@@ -1,25 +1,74 @@
 import AVFoundation
 import Combine
 
+public enum AudioRecorderError: Error {
+    case invalidInputFormat(sampleRate: Double, channels: UInt32)
+}
+
 public final class AudioRecorder {
     public let amplitude = PassthroughSubject<Float, Never>()
     public let chunks = PassthroughSubject<AVAudioPCMBuffer, Never>()
 
-    private let engine = AVAudioEngine()
+    private var engine = AVAudioEngine()
     private var converter: AVAudioConverter?
     private var monoHWFormat: AVAudioFormat?
     private let targetFormat = AVAudioFormat(commonFormat: .pcmFormatFloat32,
                                              sampleRate: 16_000, channels: 1, interleaved: false)!
     private var accumulated: AVAudioPCMBuffer?
     private var isRecording = false
+    private var configChangeObserver: NSObjectProtocol?
 
-    public init() {}
+    public init() {
+        observeConfigurationChanges()
+    }
+
+    deinit {
+        if let obs = configChangeObserver {
+            NotificationCenter.default.removeObserver(obs)
+        }
+    }
+
+    private func observeConfigurationChanges() {
+        configChangeObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange,
+            object: engine,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            pttLog("AVAudioEngineConfigurationChange — resetting engine")
+            self.rebuildEngine()
+        }
+    }
+
+    private func rebuildEngine() {
+        if isRecording {
+            engine.inputNode.removeTap(onBus: 0)
+            engine.stop()
+            isRecording = false
+        }
+        if let obs = configChangeObserver {
+            NotificationCenter.default.removeObserver(obs)
+            configChangeObserver = nil
+        }
+        engine = AVAudioEngine()
+        converter = nil
+        monoHWFormat = nil
+        observeConfigurationChanges()
+    }
 
     public func start() throws {
         guard !isRecording else { return }
         let input = engine.inputNode
         let hwFormat = input.outputFormat(forBus: 0)
         pttLog("AudioRecorder hwFormat: sampleRate=\(hwFormat.sampleRate) channels=\(hwFormat.channelCount)")
+        guard hwFormat.sampleRate > 0, hwFormat.channelCount > 0 else {
+            pttLog("AudioRecorder: invalid input format, rebuilding engine")
+            rebuildEngine()
+            throw AudioRecorderError.invalidInputFormat(
+                sampleRate: hwFormat.sampleRate,
+                channels: hwFormat.channelCount
+            )
+        }
         let monoHW = AVAudioFormat(commonFormat: .pcmFormatFloat32,
                                    sampleRate: hwFormat.sampleRate,
                                    channels: 1,
@@ -27,6 +76,7 @@ public final class AudioRecorder {
         monoHWFormat = monoHW
         converter = AVAudioConverter(from: monoHW, to: targetFormat)
 
+        input.removeTap(onBus: 0)
         var tapCount = 0
         input.installTap(onBus: 0, bufferSize: 4096, format: hwFormat) { [weak self] buffer, _ in
             tapCount += 1
@@ -43,7 +93,14 @@ public final class AudioRecorder {
         }
         accumulated = AVAudioPCMBuffer(pcmFormat: targetFormat, frameCapacity: 16_000 * 120)
         engine.prepare()
-        try engine.start()
+        do {
+            try engine.start()
+        } catch {
+            pttLog("engine.start failed: \(error) — rebuilding engine")
+            input.removeTap(onBus: 0)
+            rebuildEngine()
+            throw error
+        }
         isRecording = true
     }
 

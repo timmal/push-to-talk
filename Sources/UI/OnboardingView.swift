@@ -6,7 +6,7 @@ struct OnboardingView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Push-to-Talk needs three permissions")
+            Text("HoldSpeak needs three permissions")
                 .font(.title2).bold()
             row("Microphone", ok: perms.microphone) {
                 Task {

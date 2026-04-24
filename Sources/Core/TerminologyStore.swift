@@ -16,8 +16,8 @@ public struct TerminologyEntry: Codable, Identifiable, Hashable {
 }
 
 public extension Notification.Name {
-    static let terminologyChanged = Notification.Name("PushToTalk.terminologyChanged")
-    static let terminologyActiveLanguageChanged = Notification.Name("PushToTalk.terminologyActiveLanguageChanged")
+    static let terminologyChanged = Notification.Name("HoldSpeak.terminologyChanged")
+    static let terminologyActiveLanguageChanged = Notification.Name("HoldSpeak.terminologyActiveLanguageChanged")
 }
 
 @MainActor
@@ -50,12 +50,12 @@ public final class TerminologyStore: ObservableObject {
 
     public nonisolated static func defaultDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("push-to-talk/terminology")
+        return base.appendingPathComponent("HoldSpeak/terminology")
     }
 
     public nonisolated static func legacyFlatFile() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("push-to-talk/terminology.json")
+        return base.appendingPathComponent("HoldSpeak/terminology.json")
     }
 
     // MARK: - Bootstrap

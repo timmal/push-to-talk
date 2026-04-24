@@ -13,7 +13,7 @@ final class OverlayWindow {
                         styleMask: [.borderless, .nonactivatingPanel],
                         backing: .buffered, defer: true)
         panel.isFloatingPanel = true
-        panel.level = .floating
+        panel.level = .statusBar
         panel.backgroundColor = .clear
         panel.isOpaque = false
         panel.hasShadow = false

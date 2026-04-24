@@ -22,34 +22,34 @@ fi
 
 xcodegen generate >/dev/null
 
-pkill -x PushToTalk 2>/dev/null || true
+pkill -x HoldSpeak 2>/dev/null || true
 chmod -R u+w build dist 2>/dev/null || true
 rm -rf build dist 2>/dev/null || true
 rm -rf build dist 2>/dev/null || true
 mkdir -p build dist
-xcodebuild -scheme PushToTalk -configuration Release \
+xcodebuild -scheme HoldSpeak -configuration Release \
   -derivedDataPath build clean build 2>&1 | tail -5
 
-APP_SRC="build/Build/Products/Release/PushToTalk.app"
+APP_SRC="build/Build/Products/Release/HoldSpeak.app"
 mkdir -p dist
-cp -R "$APP_SRC" "dist/PushToTalk.app"
+cp -R "$APP_SRC" "dist/HoldSpeak.app"
 
-IDENTITY="PushToTalk Dev (self-signed)"
+IDENTITY="HoldSpeak Dev (self-signed)"
 if security find-identity -v -p codesigning login.keychain-db 2>/dev/null | grep -q "$IDENTITY"; then
-  codesign --force --deep --sign "$IDENTITY" "dist/PushToTalk.app"
+  codesign --force --deep --sign "$IDENTITY" "dist/HoldSpeak.app"
 else
-  codesign --force --deep --sign - "dist/PushToTalk.app"
+  codesign --force --deep --sign - "dist/HoldSpeak.app"
 fi
 
 # Build DMG
 STAGING="dist/dmg-staging"
 rm -rf "$STAGING"
 mkdir -p "$STAGING"
-cp -R "dist/PushToTalk.app" "$STAGING/"
+cp -R "dist/HoldSpeak.app" "$STAGING/"
 ln -s /Applications "$STAGING/Applications"
 
-DMG="dist/PushToTalk-$VERSION.dmg"
-hdiutil create -volname "Push-to-Talk $VERSION" \
+DMG="dist/HoldSpeak-$VERSION.dmg"
+hdiutil create -volname "HoldSpeak $VERSION" \
   -srcfolder "$STAGING" \
   -ov -format UDZO "$DMG"
 
@@ -64,14 +64,14 @@ git push origin "$TAG"
 
 # GitHub release
 gh release create "$TAG" "$DMG" \
-  --title "Push-to-Talk $VERSION" \
+  --title "HoldSpeak $VERSION" \
   --generate-notes
 
 echo
 echo "Released $TAG"
 echo "DMG: $DMG"
 
-# Relaunch the installed app so the user isn't left without PushToTalk running
-if [[ -d /Applications/PushToTalk.app ]]; then
-  open /Applications/PushToTalk.app
+# Relaunch the installed app so the user isn't left without HoldSpeak running
+if [[ -d /Applications/HoldSpeak.app ]]; then
+  open /Applications/HoldSpeak.app
 fi

@@ -93,7 +93,7 @@ struct PopoverView: View {
             radioIcon
                 .frame(width: 18, height: 18)
                 .foregroundColor(PTT.textPrimary(scheme))
-            Text("Push-to-Talk")
+            Text("HoldSpeak")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(PTT.textPrimary(scheme))
             Spacer()

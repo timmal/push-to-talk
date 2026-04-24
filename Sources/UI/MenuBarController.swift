@@ -23,7 +23,7 @@ final class MenuBarController {
                 img = svg
             } else {
                 img = NSImage(systemSymbolName: "antenna.radiowaves.left.and.right",
-                              accessibilityDescription: "Push-to-Talk")
+                              accessibilityDescription: "HoldSpeak")
             }
             btn.image = img
             btn.target = self

@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "PushToTalk",
+    name: "HoldSpeak",
     platforms: [.macOS(.v13)],
     products: [
-        .library(name: "PushToTalkCore", targets: ["PushToTalkCore"]),
+        .library(name: "HoldSpeakCore", targets: ["HoldSpeakCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift", from: "6.0.0"),
@@ -13,15 +13,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "PushToTalkCore",
+            name: "HoldSpeakCore",
             dependencies: [
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "Sources/Core"
         ),
         .testTarget(
-            name: "PushToTalkCoreTests",
-            dependencies: ["PushToTalkCore"],
+            name: "HoldSpeakCoreTests",
+            dependencies: ["HoldSpeakCore"],
             path: "Tests"
         ),
     ]

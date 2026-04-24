@@ -1,5 +1,5 @@
 import XCTest
-@testable import PushToTalkCore
+@testable import HoldSpeakCore
 
 private final class MockStore: HistoryStoring {
     var total = 0

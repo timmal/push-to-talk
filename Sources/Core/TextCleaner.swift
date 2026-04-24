@@ -42,7 +42,12 @@ public enum TextCleaner {
         "like and subscribe",
     ]
 
-    public static func clean(_ input: String, terminology: [TerminologyEntry] = []) -> String {
+    public static func clean(
+        _ input: String,
+        terminology: [TerminologyEntry] = [],
+        autoPunctuation: Bool = true,
+        autoCapitalize: Bool = true
+    ) -> String {
         var s = input
         for rule in rules {
             guard let regex = try? NSRegularExpression(pattern: rule.pattern, options: rule.options) else { continue }
@@ -58,9 +63,16 @@ public enum TextCleaner {
             return ""
         }
         s = canonicalize(s, terminology: terminology)
-        // Capitalize first character (Unicode-safe)
-        s = s.prefix(1).uppercased() + s.dropFirst()
-        if let last = s.last, !".?!".contains(last) { s += "." }
+        if autoCapitalize {
+            s = s.prefix(1).uppercased() + s.dropFirst()
+        } else {
+            s = s.prefix(1).lowercased() + s.dropFirst()
+        }
+        if autoPunctuation {
+            if let last = s.last, !".?!".contains(last) { s += "." }
+        } else {
+            while let last = s.last, ".?!,;:".contains(last) { s.removeLast() }
+        }
         return s
     }
 

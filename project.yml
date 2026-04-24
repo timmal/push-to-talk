@@ -1,4 +1,4 @@
-name: PushToTalk
+name: HoldSpeak
 options:
   bundleIdPrefix: com.timmal
   deploymentTarget:
@@ -30,7 +30,7 @@ settings:
       CODE_SIGNING_ALLOWED: YES
 
 targets:
-  PushToTalk:
+  HoldSpeak:
     type: application
     platform: macOS
     deploymentTarget: "13.0"
@@ -61,22 +61,22 @@ targets:
       path: Resources/Info.plist
       properties:
         LSUIElement: true
-        CFBundleDisplayName: Push-to-Talk
-        CFBundleName: Push-to-Talk
+        CFBundleDisplayName: HoldSpeak
+        CFBundleName: HoldSpeak
         CFBundleIconFile: AppIcon
         CFBundleIconName: AppIcon
         CFBundleShortVersionString: "0.2.3"
         CFBundleVersion: "1"
-        NSMicrophoneUsageDescription: Push-to-Talk transcribes your speech locally while you hold the hotkey.
+        NSMicrophoneUsageDescription: HoldSpeak transcribes your speech locally while you hold the hotkey.
         NSHumanReadableCopyright: ""
     entitlements:
-      path: Resources/PushToTalk.entitlements
+      path: Resources/HoldSpeak.entitlements
       properties:
         com.apple.security.app-sandbox: false
         com.apple.security.device.audio-input: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.timmal.push-to-talk
+        PRODUCT_BUNDLE_IDENTIFIER: com.timmal.holdspeak
         MARKETING_VERSION: "0.2.3"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO

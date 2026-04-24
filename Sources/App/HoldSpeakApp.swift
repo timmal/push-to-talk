@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct PushToTalkApp: App {
+struct HoldSpeakApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     var body: some Scene {
         Settings { EmptyView() }

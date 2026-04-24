@@ -7,7 +7,7 @@ public final class ModelManager {
 
     public func managedDirectory() -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("push-to-talk/models")
+        return base.appendingPathComponent("HoldSpeak/models")
     }
 
     public func macWhisperDirectory() -> URL {
