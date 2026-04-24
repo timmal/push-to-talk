@@ -76,7 +76,7 @@ targets:
         com.apple.security.device.audio-input: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.timmal.holdspeak
+        PRODUCT_BUNDLE_IDENTIFIER: com.timmal.push-to-talk
         MARKETING_VERSION: "0.2.5"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: NO
